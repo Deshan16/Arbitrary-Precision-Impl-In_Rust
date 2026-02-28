@@ -21,7 +21,7 @@ impl BigFloat {
         }
         
         let mut res = BigFloat::new(self.sign, self.mantissa.mul_u32(m), self.exp10, self.precision);
-        res.normalize();
+        res.trim_to_prec();
         res
     }
     
@@ -31,7 +31,7 @@ impl BigFloat {
         }
         
         let mut res = BigFloat::new(self.sign, self.mantissa.mul_u64(m), self.exp10, self.precision);
-        res.normalize();
+        res.trim_to_prec();
         res
     }
 }

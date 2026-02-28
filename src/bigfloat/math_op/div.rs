@@ -11,7 +11,7 @@ impl BigFloat {
         }
         
         let prec = self.precision.max(other.precision);
-        let guard = self.guard_digits_for_precision();
+        let guard = self.guard_digits_for_precision(prec);
         let scale = prec + guard;
         
         let scaled = self.mantissa.mul_pow10(scale);
@@ -37,7 +37,7 @@ impl BigFloat {
             return Ok(Self::zero(self.precision));
         }
         
-        let scale = self.precision + self.guard_digits_for_precision();
+        let scale = self.precision + self.guard_digits_for_precision(self.precision);
         
         let scaled = self.mantissa.mul_pow10(scale);
         let (q, r) = scaled.div_mod_u32(d)?;
@@ -57,7 +57,7 @@ impl BigFloat {
             return Ok(Self::zero(self.precision));
         }
         
-        let scale = self.precision + self.guard_digits_for_precision();
+        let scale = self.precision + self.guard_digits_for_precision(self.precision);
         
         let scaled = self.mantissa.mul_pow10(scale);
         let (q, r) = scaled.div_mod_u64(d)?;

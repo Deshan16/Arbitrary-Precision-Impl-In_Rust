@@ -66,7 +66,7 @@ pub(in crate::bigfloat) fn __sin(r: &BigFloat, out_prec: usize, work_prec: usize
 }
 
 pub(in crate::bigfloat) fn __cos(r: &BigFloat, out_prec: usize, work_prec: usize) -> BigFloat {
-    let extra: i64 = 8;
+    let extra: i64 = 10;
     let stop_exp: i64 = -((out_prec as i64) + extra);
     
     let r = r.with_precision(work_prec);
@@ -102,9 +102,9 @@ pub(in crate::bigfloat) fn __cos(r: &BigFloat, out_prec: usize, work_prec: usize
 }
 
 pub(in crate::bigfloat) fn pi_over_2(p: usize) -> BigFloat {
-    BigFloat::PI(p + 5).div_u32(2).expect("2 != 0")
+    BigFloat::PI(p + 10).div_u32(2).expect("2 != 0")
 }
 
 pub(in crate::bigfloat) fn invers_pi_over_2(p: usize) -> BigFloat {
-    &BigFloat::from_with_prec(2, p + 5) / &BigFloat::PI(p + 5)
+    &BigFloat::from_with_prec(2, p + 10) / &BigFloat::PI(p + 10)
 }

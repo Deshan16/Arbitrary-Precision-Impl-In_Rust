@@ -61,19 +61,18 @@ impl BigInt {
         trim_leading_zeros(&mut u_be);
         trim_leading_zeros(&mut v_be);
         
-        let n = v_be.len();
-        let m = u_be.len() - n;
-        
         let v0 = v_be[0] as u64;
         let d = (BASE as u64 / (v0 + 1)) as u32;
         
-        let v_norm = if d == 1 { v_be.clone() } else { mul_u32_big_endian(&v_be, d) };
-        let mut u_norm = if d == 1 { u_be.clone() } else { mul_u32_big_endian(&u_be, d) };
+        let v = if d == 1 { v_be.clone() } else { mul_u32_big_endian(&v_be, d) };
+        let mut u = if d == 1 { u_be.clone() } else { mul_u32_big_endian(&u_be, d) };
         
-        u_norm.insert(0, 0);
+        if u.len() == u_be.len() {
+            u.insert(0, 0);
+        }
         
-        let v = v_norm;
-        let mut u = u_norm;
+        let n = v.len();
+        let m = u.len() - n - 1;
         
         let mut q = vec![0u32; m + 1];
         

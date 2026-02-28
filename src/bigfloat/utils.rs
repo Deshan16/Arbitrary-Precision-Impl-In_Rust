@@ -82,17 +82,23 @@ impl BigFloat {
         }
     }
     
-    pub(in crate::bigfloat) fn guard_digits_for_precision(&self) -> usize {
-        if self.precision <= 1 {
-            3
+    pub(in crate::bigfloat) fn guard_digits_for_precision(&self, prec: usize) -> usize {
+        if prec <= 8 {
+            16
+        } else if prec <= 32 {
+            24
+        } else if prec <= 128 {
+            48
+        } else if prec <= 512 {
+            64
         } else {
-            let mut p = self.precision;
-            let mut digits = 0usize;
-            while p > 0 {
-                p /= 5;
-                digits += 1;
+            let mut p = prec;
+            let mut dec_digits = 1usize;
+            while p >= 10 {
+                p /= 10;
+                dec_digits += 1;
             }
-            (digits + 2).max(3)
+            80 + dec_digits * 6
         }
     }
     

@@ -1,9 +1,36 @@
+use std::{collections::HashMap, sync::{Arc, OnceLock, RwLock}};
+
 use super::super::super::{BigFloat, BigFloatError};
+
+static PI_CACHE: OnceLock<RwLock<HashMap<usize, Arc<BigFloat>>>> = OnceLock::new();
 
 impl BigFloat {
     #[allow(non_snake_case)]
     pub fn PI(prec: usize) -> Self {
-        let work = prec + 10; // guard = 10
+        let cache = PI_CACHE.get_or_init(|| {
+            RwLock::new(HashMap::new())
+        });
+        
+        if let Some(pi) = cache.read().unwrap().get(&prec) {
+            return (**pi).clone();
+        }
+        
+        let pi = Self::compute_pi(prec);
+        
+        let mut w = cache.write().unwrap();
+        
+        if let Some(pi) = w.get(&prec) {
+            return (**pi).clone();
+        }
+        
+        w.insert(prec, Arc::new(pi.clone()));
+        
+        pi
+    }
+    
+    pub fn compute_pi(prec: usize) -> Self {
+        let guard = Self::one(prec).guard_digits_for_precision(prec);
+        let work = prec + guard + 4;
         
         let a = Self::arctan_inv_u32(5, work).expect("internal div by non-zero");
         let b = Self::arctan_inv_u32(239, work).expect("internal div by non-zero");

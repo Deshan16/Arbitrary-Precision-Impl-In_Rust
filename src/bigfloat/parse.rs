@@ -96,3 +96,15 @@ impl IntoBigFloatWithPrec for BigInt {
         BigFloat::new(sign, self.clone(), 0, prec)
     }
 }
+
+impl IntoBigFloatWithPrec for f32 {
+    fn into_bigfloat_with_prec(self, prec: usize) -> BigFloat {
+        BigFloat::from_str(&self.to_string(), prec).expect("value is not finite or nan")
+    }
+}
+
+impl IntoBigFloatWithPrec for f64 {
+    fn into_bigfloat_with_prec(self, prec: usize) -> BigFloat {
+        BigFloat::from_str(&self.to_string(), prec).expect("value is not finite or nan")
+    }
+}
