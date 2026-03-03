@@ -4,6 +4,8 @@ use super::super::bigint::BigIntError;
 pub enum BigFloatError {
     ZeroDivisionError,
     ParseError,
+    NegativeSquareRoot,
+    NonPositiveLogError
 }
 
 impl From<BigIntError> for BigFloatError {

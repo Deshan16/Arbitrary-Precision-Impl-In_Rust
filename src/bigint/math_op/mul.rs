@@ -95,6 +95,40 @@ impl BigInt {
         res
     }
     
+    pub(crate) fn mul_i32(&self, k: i32) -> Self {
+        if k == 0 || self.sign == 0 {
+            return BigInt::zero();
+        }
+        
+        let mut res = self.clone();
+        if k < 0 {
+            res.sign *= -1;
+            res = res.mul_u32((-k) as u32);
+        } else {
+            res = res.mul_u32(k as u32);
+        }
+        
+        res.normalize();
+        res
+    }
+    
+    pub(crate) fn mul_i64(&self, k: i64) -> Self {
+        if k == 0 || self.sign == 0 {
+            return BigInt::zero();
+        }
+        
+        let mut res = self.clone();
+        if k < 0 {
+            res.sign *= -1;
+            res = res.mul_u64((-k) as u64);
+        } else {
+            res = res.mul_u64(k as u64);
+        }
+        
+        res.normalize();
+        res
+    }
+    
     pub(crate) fn mul_pow10(&self, k: usize) -> Self {
         if self.is_zero() { return Self::zero(); }
         

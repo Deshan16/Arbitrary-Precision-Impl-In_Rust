@@ -23,7 +23,7 @@ impl BigFloat {
         };
         
         res.precision = p;
-        res.trim_to_prec();
+        res.trim_work();
         res
     }
 }

@@ -29,7 +29,7 @@ impl BigFloat {
     }
     
     pub fn compute_pi(prec: usize) -> Self {
-        let guard = Self::one(prec).guard_digits_for_precision(prec);
+        let guard = Self::guard_digits_for_precision(prec);
         let work = prec + guard + 4;
         
         let a = Self::arctan_inv_u32(5, work).expect("internal div by non-zero");
@@ -40,7 +40,7 @@ impl BigFloat {
         
         let mut pi = &p1 - &p2;
         pi.precision = prec;
-        pi.trim_to_prec();
+        pi.trim_work();
         pi
     }
     

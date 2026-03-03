@@ -22,7 +22,7 @@ impl BigFloat {
         let kbf = BigFloat::from_with_prec(k, prec_work);
         let mut r = &x - &(&kbf * &v);
         
-        r.trim_to_prec();
+        r.trim_work();
         
         (q, r)
     }
@@ -42,6 +42,10 @@ pub(in crate::bigfloat) fn __sin(r: &BigFloat, out_prec: usize, work_prec: usize
     loop {
         let next = &sin_sum + &t_sin;
         
+        if next == sin_sum { break; }
+        
+        sin_sum = next;
+        
         let a: u64 = (2 * n + 2) as u64;
         let b: u64 = (2 * n + 3) as u64;
         let denom = a * b;
@@ -49,13 +53,9 @@ pub(in crate::bigfloat) fn __sin(r: &BigFloat, out_prec: usize, work_prec: usize
         t_sin = -(&t_sin * &r2);
         t_sin = t_sin.div_u64(denom).expect("denom is never zero");
         
-        if next == sin_sum || t_sin.sci_exp10_abs() < stop_exp {
-            break;
-        }
+        if t_sin.sci_exp10_abs() < stop_exp { break; }
         
         n += 1;
-        
-        sin_sum = next;
         
         if n > 20000 { break; }
     }

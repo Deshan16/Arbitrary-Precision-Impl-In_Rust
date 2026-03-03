@@ -2,6 +2,15 @@ use std::cmp::Ordering;
 
 use super::{BigFloat, BigInt, super::bigint::BASE};
 
+#[derive(Clone, Copy, Debug)]
+pub enum RoundingMode {
+    TowardZero,
+    HalfUp,
+    HalfEven,
+    TowardPosInf,
+    TowardNegInf,
+}
+
 impl BigFloat {
     pub fn abs(&self) -> Self {
         if self.is_zero() { self.clone() }
@@ -36,38 +45,11 @@ impl BigFloat {
     }
     
     pub fn trim_to_prec(&mut self) {
-        if self.sign == 0 { return; }
-        
-        let s = self.mantissa.to_string();
-        let len = s.len();
-        if len <= self.precision { return; }
-        
-        let cut = len - self.precision;
-        
-        let mut q = self.mantissa.clone();
-        let mut remaining = cut.saturating_sub(1);
-        
-        while remaining >= 9 {
-            q = q.div_mod_u32(BASE).unwrap().0;
-            remaining -= 9;
-        }
-        
-        if remaining > 0 {
-            let mut p = 1u32;
-            for _ in 0..remaining {
-                p *= 10;
-            }
-            q = q.div_mod_u32(p).unwrap().0;
-        }
-        
-        let (mut q2, round_digit) = q.div_mod_u32(10).unwrap();
-        if round_digit >= 5 {
-            q2 = q2.add(&BigInt::one());
-        }
-        
-        self.mantissa = q2;
-        self.exp10 += cut as i64;
-        self.normalize();
+        self.trim_to_prec_with(RoundingMode::HalfEven);
+    }
+    
+    pub(crate) fn trim_work(&mut self) {
+        self.trim_to_prec_with(RoundingMode::TowardZero);
     }
     
     pub(in crate::bigfloat) fn round_from_remainder(q: BigInt, r: BigInt, den: &BigInt) -> BigInt {
@@ -82,7 +64,7 @@ impl BigFloat {
         }
     }
     
-    pub(in crate::bigfloat) fn guard_digits_for_precision(&self, prec: usize) -> usize {
+    pub(in crate::bigfloat) fn guard_digits_for_precision(prec: usize) -> usize {
         if prec <= 8 {
             16
         } else if prec <= 32 {
@@ -127,6 +109,55 @@ impl BigFloat {
             }
         } else {
             q
+        }
+    }
+    
+    pub fn trim_to_prec_with(&mut self, mode: RoundingMode) {
+        if self.sign == 0 { return; }
+
+        let len = self.mantissa.decimal_len();
+        if len <= self.precision { return; }
+
+        let cut = len - self.precision;
+        let den = BigInt::one().mul_pow10(cut); // 10^cut
+
+        let (q, r) = self.mantissa.div_mod(&den).expect("10^cut != 0");
+
+        let q = Self::round_from_remainder_mode(q, r, &den, self.sign, mode);
+
+        self.mantissa = q;
+        self.exp10 += cut as i64;
+        self.normalize();
+    }
+    
+    pub(in crate::bigfloat) fn round_from_remainder_mode(q: BigInt, r: BigInt, den: &BigInt, sign: i8, mode: RoundingMode) -> BigInt {
+        if r.is_zero() { return q; }
+        
+        match mode {
+            RoundingMode::TowardZero => q,
+            RoundingMode::HalfUp => {
+                let twice_r = r.add(&r);
+                if twice_r.comp_abs(den) != Ordering::Less { q.add(&BigInt::one()) } else { q }
+            },
+            RoundingMode::HalfEven => {
+                let twice_r = r.add(&r);
+                match twice_r.comp_abs(den) {
+                    Ordering::Greater => q.add(&BigInt::one()),
+                    Ordering::Less => q,
+                    Ordering::Equal => {
+                        // tie: round so last digit becomes even
+                        if q.rem_u32(2) == 1 { q.add(&BigInt::one()) } else { q }
+                    }
+                }
+            }
+    
+            RoundingMode::TowardPosInf => {
+                if sign > 0 { q.add(&BigInt::one()) } else { q }
+            }
+    
+            RoundingMode::TowardNegInf => {
+                if sign < 0 { q.add(&BigInt::one()) } else { q }
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ use super::super::super::{BigFloat, BigInt};
 impl BigFloat {
     #[allow(non_snake_case)]
     pub fn E(prec: usize) -> BigFloat {
-        let guard = BigFloat::one(prec).guard_digits_for_precision(prec);
+        let guard = BigFloat::guard_digits_for_precision(prec);
         let prec_work = prec + guard + 4;
         
         let mut term = BigFloat::one(prec_work);
@@ -25,7 +25,7 @@ impl BigFloat {
         }
         
         sum.precision = prec;
-        sum.trim_to_prec();
+        sum.trim_work();
         sum
     }
 }

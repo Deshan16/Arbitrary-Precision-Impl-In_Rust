@@ -34,4 +34,36 @@ impl BigFloat {
         res.trim_to_prec();
         res
     }
+    
+    pub(crate)  fn mul_i32(&self, m: i32) -> Self {
+        if m == 0 || self.is_zero() {
+            return Self::zero(self.precision);
+        }
+        
+        let mut res = self.clone();
+        if m < 0 {
+            res = res.mul_u32((-m) as u32);
+            res.sign *= -1;
+        } else {
+            res = res.mul_u32(m as u32);
+        }
+        
+        res
+    }
+    
+    pub(crate)  fn mul_i64(&self, m: i64) -> Self {
+        if m == 0 || self.is_zero() {
+            return Self::zero(self.precision);
+        }
+        
+        let mut res = self.clone();
+        if m < 0 {
+            res = res.mul_u64((-m) as u64);
+            res.sign *= -1;
+        } else {
+            res = res.mul_u64(m as u64);
+        }
+        
+        res
+    }
 }

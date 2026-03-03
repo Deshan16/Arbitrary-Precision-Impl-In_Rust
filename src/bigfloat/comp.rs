@@ -11,6 +11,10 @@ impl BigFloat {
         self.sign < 0 && !self.is_zero()
     }
     
+    pub fn is_one(&self) -> bool {
+        self.sign == 1 && self.mantissa.is_one() && self.exp10 == 0
+    }
+    
     pub fn comp(&self, other: &Self) -> Ordering {
         if self.is_zero() && other.is_zero() { return Ordering::Equal; }
         if self.is_zero() { return if other.is_negative() { Ordering::Greater } else { Ordering::Less }; }
